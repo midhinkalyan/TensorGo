@@ -49,3 +49,41 @@ def process_video(video_path):
 
 video_path = '/content/drive/MyDrive/NUeZH7WBvVNAf_qg.mp4'
 process_video(video_path)
+### improved accuracy and fps using this updated model
+def preprocess_frame(frame):
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)  # Reduce noise
+    thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_MEAN_C, 
+                                   cv2.THRESH_BINARY, 11, 2)  # Adaptive thresholding
+    return thresh
+def extract_text(frame):
+    text = pytesseract.image_to_string(frame, lang='eng', config='--psm 6 --oem 3') 
+    # PSM 6 (Assume a single uniform block of text) is often suitable for video frames
+    # OEM 3 (Default, based on available data) provides a good balance
+    return text 
+def process_video(video_path, skip_frames=5):  # Process every 5th frame by default
+    cap = cv2.VideoCapture(video_path)
+    frame_count = 0
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        if frame_count % skip_frames == 0:
+            start_time = time.time()
+            processed_frame = preprocess_frame(frame)
+            text = extract_text(processed_frame)
+            end_time = time.time()
+            fps = 1 / (end_time - start_time)
+            print("Extracted Text:", text)
+            print("FPS:", fps)
+            cv2_imshow(frame) 
+            if cv2.waitKey(1) & 0xFF == ord('q'):
+                break
+
+        frame_count += 1
+
+    cap.release()
+    cv2.destroyAllWindows()  
+video_path = '/content/drive/MyDrive/NUeZH7WBvVNAf_qg.mp4'
+process_video(video_path)
