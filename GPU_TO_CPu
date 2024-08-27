@@ -1,0 +1,51 @@
+###textb generation from the image
+import cv2
+import numpy as np
+from google.colab.patches import cv2_imshow # Import the Colab patch
+
+image = cv2.imread("/content/Screenshot (16).png")
+image_rgb=cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
+!pip install pytesseract
+!apt-get install tesseract-ocr
+!apt-get install libtesseract-dev
+import pytesseract
+pytesseract_image=pytesseract.image_to_string(image_rgb)
+print(pytesseract_image)
+
+###OCR model conversion from gpu to cpu
+!pip install pytesseract
+!pip install opencv-python
+!apt-get install tesseract-ocr
+!apt-get install libtesseract-dev
+import cv2
+import pytesseract
+import time
+from google.colab.patches import cv2_imshow # Import cv2_imshow from google.colab.patches
+
+def process_image(image):
+  # Preprocess the image (e.g., grayscale, thresholding)
+  gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+  # Use Tesseract LSTM OCR to extract text
+  text = pytesseract.image_to_string(gray)
+  return text
+
+def process_video(video_path):
+  cap = cv2.VideoCapture(video_path)
+  while cap.isOpened():
+    ret, frame = cap.read()
+    if not ret:
+      break
+    start_time = time.time()
+    text = process_image(frame)
+    end_time = time.time()
+    fps = 1 / (end_time - start_time)
+    print("Extracted Text:", text)
+    print("FPS:", fps)
+    cv2_imshow(frame) # Use cv2_imshow instead of cv2.imshow
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+      break
+  cap.release()
+  cv2.destroyAllWindows()
+
+video_path = '/content/drive/MyDrive/NUeZH7WBvVNAf_qg.mp4'
+process_video(video_path)
